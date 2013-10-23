@@ -10,7 +10,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:src="@drawable/ic_action_person"
         android:contentDescription="@string/user_picture" />
 
     <TextView
@@ -29,6 +28,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
+        android:layout_alignBaseline="@+id/tvUserName"
         android:layout_alignBottom="@+id/tvUserName"
         android:layout_toRightOf="@+id/tvUserName"
         android:text="@string/user_handle"
@@ -42,5 +42,16 @@
         android:layout_below="@+id/tvUserName"
         android:text="@string/tweet_message"
         android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/tvDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/tvUserHandle"
+        android:layout_alignBottom="@+id/tvUserHandle"
+        android:layout_alignParentRight="true"
+        android:text="@string/tweet_date"
+        android:textSize="16sp"
+        android:textColor="@android:color/darker_gray" />
 
 </RelativeLayout>

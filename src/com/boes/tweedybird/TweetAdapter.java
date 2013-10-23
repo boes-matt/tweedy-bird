@@ -1,6 +1,8 @@
 package com.boes.tweedybird;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -31,17 +33,22 @@ public class TweetAdapter extends ArrayAdapter<Tweet> {
 		ImageView ivUserPicture = (ImageView) itemView.findViewById(R.id.ivUserPicture);
 		TextView tvUserName = (TextView) itemView.findViewById(R.id.tvUserName);
 		TextView tvUserHandle = (TextView) itemView.findViewById(R.id.tvUserHandle);
+		TextView tvDate = (TextView) itemView.findViewById(R.id.tvDate);
 		TextView tvTweet = (TextView) itemView.findViewById(R.id.tvTweet);
 		
 		Tweet tweet = getItem(position);
 		
 		ImageLoader imageLoader = ImageLoader.getInstance();
 		ivUserPicture.setImageResource(android.R.color.transparent);
-		imageLoader.displayImage(tweet.getUserPictureUrl(), ivUserPicture);
+		imageLoader.displayImage(tweet.user.imageUrl, ivUserPicture);
 		
-		tvUserName.setText(tweet.getUserName());
-		tvUserHandle.setText("@" + tweet.getUserHandle());
-		tvTweet.setText(tweet.getTweetBody());
+		tvUserName.setText(tweet.user.name);
+		tvUserHandle.setText("@" + tweet.user.handle);
+		tvTweet.setText(tweet.body);
+
+		Date date = new Date(tweet.timestamp);
+		DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT);
+		tvDate.setText(df.format(date));
 		
 		return itemView;
 	}

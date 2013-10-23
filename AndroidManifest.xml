@@ -45,7 +45,7 @@
         </activity>
         <activity
             android:name="com.boes.tweedybird.TimelineActivity"
-            android:label="@string/user_handle" >
+            android:label="@string/title_activity_timeline" >
         </activity>
         <activity
             android:name="com.boes.tweedybird.ComposeActivity"

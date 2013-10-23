@@ -10,6 +10,7 @@
     <string name="user_name">Name Me</string>
     <string name="user_handle">\@User</string>
     <string name="tweet_message">Ain\'t She Tweet!</string>
+    <string name="tweet_date">Date</string>
     
     <string name="action_compose">Tweet</string>
     <string name="action_refresh">Refresh</string>
