@@ -1,10 +1,10 @@
 package com.boes.tweedybird;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import android.content.Context;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,9 +47,9 @@ public class TweetAdapter extends ArrayAdapter<Tweet> {
 		tvTweet.setText(tweet.body);
 
 		Date date = new Date(tweet.timestamp);
-		DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT);
-		tvDate.setText(df.format(date));
-		
+		String dateStr = (String) DateUtils.getRelativeTimeSpanString(date.getTime());
+		tvDate.setText(dateStr);
+				
 		return itemView;
 	}
 

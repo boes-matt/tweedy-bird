@@ -3,6 +3,7 @@ package com.boes.tweedybird.models;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -39,11 +40,25 @@ public class Tweet extends Model {
 		super();
 	}
 	
+	public Tweet(JSONObject object) {
+		try {
+			this.uid = object.getLong("id");
+			this.body = object.getString("text");
+			this.timestamp = getDate(object.getString("created_at")).getTime();
+			this.user = new User(object.getJSONObject("user"));			
+		} catch (JSONException e) {
+			Log.e(TAG, "Error parsing tweet json object", e);			
+		}
+	}
+	
 	public static Tweet insert(JSONObject object) {
 		try {
 			Long tweetId = object.getLong("id");
 			Tweet t = getTweet(tweetId);
-			if (t != null) return t;
+			if (t != null) {
+				Log.d(TAG, "Redundant tweet " + t.uid + ": " + t.body);
+				return t;
+			}
 			
 			t = new Tweet();
 			t.uid = tweetId;
@@ -63,7 +78,7 @@ public class Tweet extends Model {
 		HashMap<String, Long> idBounds = new HashMap<String, Long>();
 		
 		try {
-			idBounds.put("newest", Tweet.insert(array.getJSONObject(0)).uid);
+			idBounds.put("newest", Tweet.insert(array.getJSONObject(0)).uid);    // FIX: Case when array is empty []
 			for (int i = 1; i < array.length(); i++) {
 				Tweet t = insert(array.getJSONObject(i));
 				idBounds.put("oldest", t.uid);
@@ -73,6 +88,20 @@ public class Tweet extends Model {
 		}
 		
 		return idBounds;
+	}
+	
+	public static ArrayList<Tweet> fromJsonArray(JSONArray array) {
+		ArrayList<Tweet> results = new ArrayList<Tweet>();
+		
+		try {
+			for (int i = 0; i < array.length(); i++) {
+				Tweet t = new Tweet(array.getJSONObject(i));
+				results.add(t);
+			}			
+		} catch (JSONException e) {
+			Log.e(TAG, "Error parsing json array of tweets", e);
+		}
+		return results;
 	}
 	
 	private static Date getDate(String dateStr) {
@@ -104,4 +133,9 @@ public class Tweet extends Model {
 	public static ArrayList<Tweet> getTweetsBefore(Long maxId) {
 		return new Select().from(Tweet.class).where("uid < ?", maxId).orderBy("uid DESC").execute();
 	}
+	
+	public String toString() {
+		return body;
+	}
+
 }
