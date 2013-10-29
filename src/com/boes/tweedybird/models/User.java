@@ -56,7 +56,8 @@ public class User extends Model {
 	}
 
 	public static User insert(JSONObject object) {
-		try {
+		//try {
+			/*
 			Long userId = object.getLong("id");
 			User u = getUser(userId);
 			if (u == null) {
@@ -67,13 +68,15 @@ public class User extends Model {
 			u.name = object.getString("name");
 			u.handle = object.getString("screen_name");
 			u.imageUrl = object.getString("profile_image_url");	
-						
+			*/
+			
+			User u = new User(object);
 			u.save();
 			return u;
-		} catch (JSONException e) {
-			Log.e(TAG, "Error parsing user json object", e);
-			return null;
-		}
+		//} catch (JSONException e) {
+			//Log.e(TAG, "Error parsing user json object", e);
+			//return null;
+		//}
 	}
 
 	public static User getUser(Long uid) {
@@ -108,5 +111,8 @@ public class User extends Model {
 		return imageUrl;
 	}
 	
-		
+	public Long getUid() {
+		return uid;
+	}
+	
 }

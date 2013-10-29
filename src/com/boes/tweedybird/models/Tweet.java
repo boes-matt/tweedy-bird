@@ -3,7 +3,6 @@ package com.boes.tweedybird.models;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -136,6 +135,10 @@ public class Tweet extends Model {
 	
 	public String toString() {
 		return body;
+	}
+
+	public User getUser() {
+		return user;
 	}
 
 }
