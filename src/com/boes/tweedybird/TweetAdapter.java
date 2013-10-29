@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import android.content.Context;
+import android.content.Intent;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.boes.tweedybird.models.Tweet;
+import com.boes.tweedybird.models.User;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class TweetAdapter extends ArrayAdapter<Tweet> {
@@ -41,6 +43,17 @@ public class TweetAdapter extends ArrayAdapter<Tweet> {
 		ImageLoader imageLoader = ImageLoader.getInstance();
 		ivUserPicture.setImageResource(android.R.color.transparent);
 		imageLoader.displayImage(tweet.user.imageUrl, ivUserPicture);
+		
+		final User user = getItem(position).getUser();
+		ivUserPicture.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(getContext(), ProfileActivity.class);
+				i.putExtra(ProfileActivity.KEY_UID, user.getUid());
+				getContext().startActivity(i);
+			}
+		});
 		
 		tvUserName.setText(tweet.user.name);
 		tvUserHandle.setText("@" + tweet.user.handle);
