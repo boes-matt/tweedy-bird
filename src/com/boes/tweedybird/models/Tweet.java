@@ -4,7 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 
 import org.json.JSONArray;
@@ -23,87 +23,93 @@ public class Tweet extends Model {
 
 	private static final String TAG = "Tweet";
 
+	// @Column(name = "uid", unique = true, onUniqueConflict = Column.ConflictAction.REPLACE)
 	@Column(name = "uid")
-	public Long uid;
+	private Long uid;
 	
 	@Column(name = "body")
-	public String body;
+	private String body;
 	
 	@Column(name = "timestamp")
-	public Long timestamp;
+	private Long timestamp;
 	
 	@Column(name = "user")
-	public User user;
+	private User user;
 	
 	public Tweet() {
 		super();
 	}
-	
+
 	public Tweet(JSONObject object) {
 		try {
-			this.uid = object.getLong("id");
-			this.body = object.getString("text");
-			this.timestamp = getDate(object.getString("created_at")).getTime();
-			this.user = new User(object.getJSONObject("user"));			
-		} catch (JSONException e) {
-			Log.e(TAG, "Error parsing tweet json object", e);			
-		}
-	}
-	
-	public static Tweet insert(JSONObject object) {
-		try {
-			Long tweetId = object.getLong("id");
-			Tweet t = getTweet(tweetId);
-			if (t != null) {
-				Log.d(TAG, "Redundant tweet " + t.uid + ": " + t.body);
-				return t;
-			}
-			
-			t = new Tweet();
-			t.uid = tweetId;
-			t.body = object.getString("text");
-			t.timestamp = getDate(object.getString("created_at")).getTime();
-			t.user = User.insert(object.getJSONObject("user"));
-
-			t.save();
-			return t;
+			uid = object.getLong("id");
+			body = object.getString("text");
+			timestamp = getDate(object.getString("created_at")).getTime();
+			user = User.fromJson(object.getJSONObject("user"), true);
 		} catch (JSONException e) {
 			Log.e(TAG, "Error parsing tweet json object", e);
-			return null;
 		}
 	}
 	
-	public static HashMap<String, Long> insert(JSONArray array) {
-		HashMap<String, Long> idBounds = new HashMap<String, Long>();
-		
-		try {
-			idBounds.put("newest", Tweet.insert(array.getJSONObject(0)).uid);    // FIX: Case when array is empty []
-			for (int i = 1; i < array.length(); i++) {
-				Tweet t = insert(array.getJSONObject(i));
-				idBounds.put("oldest", t.uid);
-			}			
-		} catch (JSONException e) {
-			Log.e(TAG, "Error parsing json array of tweets", e);
+	public static Tweet fromJson(JSONObject object, boolean persist) {
+		Tweet t = new Tweet(object);
+		if (persist) {
+			Tweet existing = getTweet(t.getUid());
+			if (existing != null) return existing;
+			else t.save();
 		}
-		
-		return idBounds;
+		return t;
 	}
 	
-	public static ArrayList<Tweet> fromJsonArray(JSONArray array) {
-		ArrayList<Tweet> results = new ArrayList<Tweet>();
+	public static ArrayList<Tweet> fromJsonArray(JSONArray array, boolean persist) {
+		ArrayList<Tweet> tweets = new ArrayList<Tweet>();
 		
-		try {
-			for (int i = 0; i < array.length(); i++) {
-				Tweet t = new Tweet(array.getJSONObject(i));
-				results.add(t);
-			}			
-		} catch (JSONException e) {
-			Log.e(TAG, "Error parsing json array of tweets", e);
+		for (int i = 0; i < array.length(); i++) {
+			try {
+				JSONObject object = array.getJSONObject(i);
+				Tweet t = Tweet.fromJson(object, persist);
+				tweets.add(t);				
+			} catch (JSONException e) {
+				Log.e(TAG, "Error parsing json array of tweets", e);
+			}
 		}
-		return results;
+		
+		return tweets;
 	}
 	
-	private static Date getDate(String dateStr) {
+	public static Tweet getTweet(Long uid) {
+		return new Select().from(Tweet.class).where("uid = ?", uid).executeSingle();		
+	}
+	
+	public static List<Tweet> getTweets() {
+		return new Select().from(Tweet.class).orderBy("uid DESC").execute();
+	}	
+	
+	public static Tweet getMostRecent() {
+		return new Select().from(Tweet.class).orderBy("uid DESC").executeSingle();
+	}
+	
+	public static Tweet getOldest() {
+		return new Select().from(Tweet.class).orderBy("uid ASC").executeSingle();
+	}
+		
+	public Long getUid() {
+		return uid;
+	}
+
+	public String getBody() {
+		return body;
+	}
+
+	public Long getTimestamp() {
+		return timestamp;
+	}
+
+	public User getUser() {
+		return user;
+	}
+	
+	private Date getDate(String dateStr) {
 		// for example, dateStr is "Tue Aug 28 21:16:23 +0000 2012"
 		String pattern = "EEE MMM dd HH:mm:ss ZZZZZ yyyy";
 		SimpleDateFormat df = new SimpleDateFormat(pattern, Locale.ENGLISH);
@@ -116,29 +122,10 @@ public class Tweet extends Model {
 			return new Date();
 		}
 	}
-
-	public static Tweet getTweet(Long uid) {
-		return new Select().from(Tweet.class).where("uid = ?", uid).executeSingle();		
-	}
 	
-	public static ArrayList<Tweet> getTweets() {
-		return new Select().from(Tweet.class).orderBy("uid DESC").execute();		
-	}
-
-	public static ArrayList<Tweet> getTweetsSince(Long sinceId) {
-		return new Select().from(Tweet.class).where("uid > ?", sinceId).orderBy("uid DESC").execute();
-	}
-	
-	public static ArrayList<Tweet> getTweetsBefore(Long maxId) {
-		return new Select().from(Tweet.class).where("uid < ?", maxId).orderBy("uid DESC").execute();
-	}
-	
+	@Override
 	public String toString() {
 		return body;
-	}
-
-	public User getUser() {
-		return user;
 	}
 
 }

@@ -30,10 +30,10 @@ public class ComposeActivity extends Activity {
 		ivPicture = (ImageView) findViewById(R.id.ivPicture);
 		ImageLoader imageLoader = ImageLoader.getInstance();
 		ivPicture.setImageResource(android.R.color.transparent);
-		imageLoader.displayImage(user.imageUrl, ivPicture);
+		imageLoader.displayImage(user.getImageUrl(), ivPicture);
 		
 		tvHandle = (TextView) findViewById(R.id.tvHandle);
-		tvHandle.setText(user.handle);
+		tvHandle.setText(user.getHandle());
 		
 		etTweet = (EditText) findViewById(R.id.etTweet);
 	}
@@ -45,12 +45,11 @@ public class ComposeActivity extends Activity {
 	public void sendTweet(View v) {
 		String body = etTweet.getText().toString();
 		TwitterClient client = TweedyBirdApp.getRestClient();
-		
 		client.postTweet(body, new JsonHttpResponseHandler() {
 
 			@Override
 			public void onSuccess(JSONObject response) {
-				Tweet.insert(response);
+				Tweet.fromJson(response, true);
 			}
 			
 		});

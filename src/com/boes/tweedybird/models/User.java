@@ -15,26 +15,27 @@ public class User extends Model {
 
 	private static final String TAG = "User";
 	
+	//@Column(name = "uid", unique = true, onUniqueConflict = Column.ConflictAction.REPLACE)
 	@Column(name = "uid")
-	public Long uid;
+	private Long uid;
 	
 	@Column(name = "name")
-	public String name;
+	private String name;
 	
 	@Column(name = "handle")
-	public String handle;
+	private String handle;
 	
 	@Column(name = "imageUrl")
-	public String imageUrl;
+	private String imageUrl;
 	
 	@Column(name = "tagline")
-	public String tagline;
+	private String tagline;
 	
 	@Column(name = "followersCount")
-	public int followersCount;
+	private int followersCount;
 	
 	@Column(name = "followingCount")
-	public int followingCount;
+	private int followingCount;
 
 	public User() {
 		super();
@@ -42,59 +43,48 @@ public class User extends Model {
 	
 	public User(JSONObject object) {
 		try {
-			this.uid = object.getLong("id");
-			this.name = object.getString("name");
-			this.handle = object.getString("screen_name");
-			this.imageUrl = object.getString("profile_image_url");
-			
-			this.tagline = object.getString("description");
-			this.followersCount = object.getInt("followers_count");
-			this.followingCount = object.getInt("friends_count");
+			uid = object.getLong("id");
+			name = object.getString("name");
+			handle = object.getString("screen_name");
+			imageUrl = object.getString("profile_image_url");
+			tagline = object.getString("description");
+			followersCount = object.getInt("followers_count");
+			followingCount = object.getInt("friends_count");
 		} catch (JSONException e) {
-			Log.e(TAG, "Error parsing user json object", e);
-		}		
+			Log.e(TAG, "Error parsing user json object", e);			
+		}
 	}
-
-	public static User insert(JSONObject object) {
-		//try {
-			/*
-			Long userId = object.getLong("id");
-			User u = getUser(userId);
-			if (u == null) {
-				u = new User();
-				u.uid = userId;				
-			}
-			
-			u.name = object.getString("name");
-			u.handle = object.getString("screen_name");
-			u.imageUrl = object.getString("profile_image_url");	
-			*/
-			
-			User u = new User(object);
-			u.save();
-			return u;
-		//} catch (JSONException e) {
-			//Log.e(TAG, "Error parsing user json object", e);
-			//return null;
-		//}
+	
+	public static User fromJson(JSONObject object, boolean persist) {
+		User u = new User(object);
+		if (persist) {
+			User existing = getUser(u.getUid());
+			if (existing != null) return existing;
+			else u.save();
+		}
+		return u;
 	}
-
+	
 	public static User getUser(Long uid) {
 		return new Select().from(User.class).where("uid = ?", uid).executeSingle();		
 	}
 
-	public static User fromJson(JSONObject object) {
-		return new User(object);
-	}
-
-	public String getScreenName() {
-		return handle;
+	public Long getUid() {
+		return uid;
 	}
 
 	public String getName() {
 		return name;
 	}
-	
+
+	public String getHandle() {
+		return handle;
+	}
+
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
 	public String getTagline() {
 		return tagline;
 	}
@@ -106,13 +96,10 @@ public class User extends Model {
 	public int getFollowingCount() {
 		return followingCount;
 	}
+	
+	@Override
+	public String toString() {
+		return name;
+	}
 
-	public String getImageUrl() {
-		return imageUrl;
-	}
-	
-	public Long getUid() {
-		return uid;
-	}
-	
 }
