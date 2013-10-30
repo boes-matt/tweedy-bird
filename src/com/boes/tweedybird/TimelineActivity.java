@@ -17,31 +17,40 @@ import android.view.MenuItem;
 
 import com.boes.tweedybird.fragments.HomeTimelineFragment;
 import com.boes.tweedybird.fragments.MentionsFragment;
+import com.boes.tweedybird.fragments.TweetsListFragment;
 import com.boes.tweedybird.models.User;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 public class TimelineActivity extends FragmentActivity implements TabListener {
 	
-	// TODO: Debug: Redundant tweets in DB or redundant views?  Save out max_id and since_id in onPause?
-	
-	// TODO: On network failure -> offline access
-	// TODO: Handle network failures.  Display Toasts.
-	// TODO: Refactor tweet bounds
-		
 	private static final String TAG = "TimelineActivity";
+	private static final int REQUEST_COMPOSE = 1;
 	
 	private TwitterClient client;	
 	private User user;	
-		
+	private TweetsListFragment tweetsFragment;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_timeline);
-		setupNavigationTabs();
-		
 		client = TweedyBirdApp.getRestClient();
 		loadUser();
+		setupNavigationTabs();
 	}
+
+	private void loadUser() {
+		client.getAuthenticatedUser(new JsonHttpResponseHandler() {
+			
+			@Override
+			public void onSuccess(JSONObject response) {
+				Log.d(TAG, response.toString());
+				user = User.fromJson(response, true);
+				getActionBar().setTitle("@" + user.getHandle());
+			}
+			
+		});
+	}	
 	
 	private void setupNavigationTabs() {
 		ActionBar actionBar = getActionBar();
@@ -55,37 +64,23 @@ public class TimelineActivity extends FragmentActivity implements TabListener {
 
 		actionBar.addTab(tabHome);
 		actionBar.addTab(tabMentons);
-		actionBar.selectTab(tabHome);
-	}
-
-	private void loadUser() {
-		client.getAuthenticatedUser(new JsonHttpResponseHandler() {
-			
-			@Override
-			public void onSuccess(JSONObject response) {
-				Log.d(TAG, response.toString());
-				user = User.insert(response);
-				getActionBar().setTitle("@" + user.handle);
-			}
-			
-		});
+		actionBar.selectTab(tabHome);		
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.timeline, menu);
 		return true;
 	}
 
 	public void refresh(MenuItem item) {
-		//refreshTweets();
+		if (tweetsFragment != null) tweetsFragment.refresh();
 	}
 		
 	public void composeTweet(MenuItem item) {
     	Intent i = new Intent(this, ComposeActivity.class);
-    	i.putExtra("uid", user.uid);
-    	startActivityForResult(i, 0);		
+    	i.putExtra("uid", user.getUid());
+    	startActivityForResult(i, REQUEST_COMPOSE);		
 	}
 	
 	public void onProfileView(MenuItem item) {
@@ -97,14 +92,10 @@ public class TimelineActivity extends FragmentActivity implements TabListener {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == Activity.RESULT_OK) {
-			//refreshTweets();			
+			if (requestCode == REQUEST_COMPOSE) {
+				if (tweetsFragment != null) tweetsFragment.refresh();							
+			}
 		}
-	}
-
-	@Override
-	public void onTabReselected(Tab tab, FragmentTransaction ft) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -112,18 +103,21 @@ public class TimelineActivity extends FragmentActivity implements TabListener {
 		FragmentManager manager = getSupportFragmentManager();
 		android.support.v4.app.FragmentTransaction sft = manager.beginTransaction();
 		if (tab.getTag() == "HomeTimelineFragment") {
-			// set fragmentContainer in framelayout to home timeline
-			sft.replace(R.id.fragmentContainer, new HomeTimelineFragment());
+			tweetsFragment = new HomeTimelineFragment();
 		} else {
-			// set fragmentContainer in framelayout to mentions timeline
-			sft.replace(R.id.fragmentContainer, new MentionsFragment());
+			tweetsFragment = new MentionsFragment();
 		}
+		sft.replace(R.id.fragmentContainer, tweetsFragment);
 		sft.commit();
 	}
 
 	@Override
 	public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void onTabReselected(Tab tab, FragmentTransaction ft) {
 		
 	}
 	

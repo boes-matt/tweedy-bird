@@ -24,7 +24,7 @@ public class ProfileActivity extends FragmentActivity {
 		
 		Long uid = getIntent().getLongExtra(KEY_UID, 0);
 		mUser = User.getUser(uid);
-		getActionBar().setTitle("@" + mUser.getScreenName());
+		getActionBar().setTitle("@" + mUser.getHandle());
 		populateProfileHeader();
 		
 		FragmentManager fm = getSupportFragmentManager();

@@ -20,6 +20,8 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 
 public class TweetAdapter extends ArrayAdapter<Tweet> {
 
+	private static final String TAG = "TweetsAdapter";
+
 	public TweetAdapter(Context context, ArrayList<Tweet> tweets) {
 		super(context, 0, tweets);
 	}
@@ -38,13 +40,12 @@ public class TweetAdapter extends ArrayAdapter<Tweet> {
 		TextView tvDate = (TextView) itemView.findViewById(R.id.tvDate);
 		TextView tvTweet = (TextView) itemView.findViewById(R.id.tvTweet);
 		
-		Tweet tweet = getItem(position);
+		Tweet tweet = getItem(position);		
+		final User user = tweet.getUser();
 		
 		ImageLoader imageLoader = ImageLoader.getInstance();
 		ivUserPicture.setImageResource(android.R.color.transparent);
-		imageLoader.displayImage(tweet.user.imageUrl, ivUserPicture);
-		
-		final User user = getItem(position).getUser();
+		imageLoader.displayImage(user.getImageUrl(), ivUserPicture);
 		ivUserPicture.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
@@ -55,14 +56,14 @@ public class TweetAdapter extends ArrayAdapter<Tweet> {
 			}
 		});
 		
-		tvUserName.setText(tweet.user.name);
-		tvUserHandle.setText("@" + tweet.user.handle);
-		tvTweet.setText(tweet.body);
+		tvUserName.setText(user.getName());
+		tvUserHandle.setText("@" + user.getHandle());
+		tvTweet.setText(tweet.getBody());
 
-		Date date = new Date(tweet.timestamp);
+		Date date = new Date(tweet.getTimestamp());
 		String dateStr = (String) DateUtils.getRelativeTimeSpanString(date.getTime());
 		tvDate.setText(dateStr);
-				
+
 		return itemView;
 	}
 
